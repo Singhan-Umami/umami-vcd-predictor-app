@@ -184,15 +184,17 @@ if st.button("🚀 Predict VCD", type="primary", use_container_width=True):
                 
                 # 1. Key Metrics
                 st.markdown("### 📊 Results")
-                col1, col2, col3 = st.columns(3)
+                col1, col2, col3, col4 = st.columns(4)
                 
                 today_vcd = result.get('today_vcd', 0)
                 day1_vcd = result.get('forecast', {}).get('day1', 0)
+                day2_vcd = result.get('forecast', {}).get('day2', 0)
                 day1_growth = result.get('growth_rate_percent', {}).get('day1', 0)
                 
                 col1.metric("Today's VCD", f"{today_vcd:.4f}", "M cells/ml")
                 col2.metric("Day 1 Forecast", f"{day1_vcd:.4f}", f"{day1_vcd - today_vcd:.4f}")
-                col3.metric("Growth Rate", f"{day1_growth:.2f}%")
+                col3.metric("Day 2 Forecast", f"{day2_vcd:.4f}", f"{day2_vcd - day1_vcd:.4f}")
+                col4.metric("Growth Rate (D1)", f"{day1_growth:.2f}%")
 
                 st.markdown("---")
 
