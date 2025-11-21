@@ -180,25 +180,46 @@ if st.button("🚀 Predict VCD", type="primary", use_container_width=True):
                 
                 st.success("Prediction Successful!")
                 
-                # Display Main Prediction
-                st.metric(label="Predicted Today's VCD", value=f"{result.get('today_vcd', 0):.4f}")
+                # --- Improved Result Display ---
                 
-                # Display Forecasts
-                col1, col2 = st.columns(2)
-                forecast = result.get("forecast", {})
-                growth = result.get("growth_rate_percent", {})
+                # 1. Key Metrics
+                st.markdown("### 📊 Results")
+                col1, col2, col3 = st.columns(3)
                 
-                with col1:
-                    st.subheader("📅 Forecast (VCD)")
-                    st.write(f"**Day 1:** {forecast.get('day1', 0):.4f}")
-                    st.write(f"**Day 2:** {forecast.get('day2', 0):.4f}")
-                    
-                with col2:
-                    st.subheader("📈 Growth Rate (%)")
-                    st.write(f"**Day 1:** {growth.get('day1', 0):.4f}%")
-                    st.write(f"**Day 2:** {growth.get('day2', 0):.4f}%")
-                    
-                st.json(result)
+                today_vcd = result.get('today_vcd', 0)
+                day1_vcd = result.get('forecast', {}).get('day1', 0)
+                day1_growth = result.get('growth_rate_percent', {}).get('day1', 0)
+                
+                col1.metric("Today's VCD", f"{today_vcd:.4f}", "M cells/ml")
+                col2.metric("Day 1 Forecast", f"{day1_vcd:.4f}", f"{day1_vcd - today_vcd:.4f}")
+                col3.metric("Growth Rate", f"{day1_growth:.2f}%")
+
+                st.markdown("---")
+
+                # 2. Visualizations
+                import plotly.graph_objects as go
+                
+                # Prepare Data
+                days = ["Today", "Day +1", "Day +2"]
+                vcd_values = [
+                    today_vcd,
+                    result.get('forecast', {}).get('day1', 0),
+                    result.get('forecast', {}).get('day2', 0)
+                ]
+                
+                # Chart
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(x=days, y=vcd_values, mode='lines+markers+text',
+                                         text=[f"{v:.2f}" for v in vcd_values], textposition="top center",
+                                         line=dict(color='#00CC96', width=3),
+                                         marker=dict(size=10)))
+                fig.update_layout(title="VCD Forecast Trend", yaxis_title="VCD (M cells/ml)", template="plotly_dark")
+                st.plotly_chart(fig, use_container_width=True)
+
+                # 3. Raw Data (Hidden)
+                with st.expander("View Raw JSON Response"):
+                    st.json(result)
+
             else:
                 st.error(f"Error: {response.status_code} - {response.text}")
         except Exception as e:
